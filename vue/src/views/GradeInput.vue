@@ -1,0 +1,144 @@
+<template>
+  <div>
+    <div  style="padding: 10px">
+      <!--    搜索区域-->
+      <div style="margin: 10px 0">
+        <el-input v-model="search" placeholder="请输入课程ID" style="width: 20%" clearable/>
+        <el-button type="primary" style="margin-left: 10px" @click="findByID">查询</el-button>
+      </div>
+      <el-table
+          :data="tableData"
+          style="width: 100%"
+          border="true"
+      >
+        <el-table-column prop="classid" label="课程ID"  width="200px" sortable />
+        <el-table-column prop="className" label="课程名"  />
+        <el-table-column prop="studentNumber" label="学号"  />
+        <el-table-column prop="studentName" label="学生姓名"  />
+        <el-table-column prop="scores" label="成绩"  />
+        <el-table-column label="操作"  >
+          <template #default="scope">
+            <el-button size="mini" @click="input(scope.row)">录入</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+
+      <el-dialog v-model="dialogVisible" title="成绩录入" width="30%" >
+        <el-form ref="form" :model="form" label-width="80px" >
+          <el-form-item label="成绩">
+            <el-input v-model="form.scores" ></el-input>
+          </el-form-item>
+        </el-form>
+        <template #footer>
+      <span class="dialog-footer">
+        <el-button type="primary" @click="save">保存</el-button>
+      </span>
+        </template>
+      </el-dialog>
+      <div style="margin: 10px 0">
+        <el-pagination
+            v-model:currentPage="currentPage"
+            :page-sizes="[5, 10, 20]"
+            :page-size="pageSize"
+            layout="total, sizes, prev, pager, next, jumper"
+            :total="total"
+            @size-change="handleSizeChange"
+            @current-change="handleCurrentChange"
+        >
+        </el-pagination>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+import request from "../../untils/request";
+
+export default {
+  name: "gradeInput",
+  data(){
+    return{
+      dialogVisible:false,
+      form: {},
+      tableData:[],
+      currentPage: 1,
+      pageSize:10,
+      total:0,
+      search:''
+    }
+  },
+  created() {
+    this.load()
+  },
+  methods:{
+    save(){
+      request.put("/chooselist",this.form).then(res =>{
+        console.log(res)
+        if(res.code ==="0"){
+          this.$message({
+            type:"success",
+            message:"更新成功"
+          })
+          this.dialogVisible=false
+          this.load()
+        }
+        else {
+          this.$message({
+            type:"error",
+            message:res.msg
+          })
+        }
+      })
+    },
+    input(row){
+      this.form=JSON.parse(JSON.stringify(row));
+      this.dialogVisible=true
+    },
+    findByID(){
+      let str = sessionStorage.getItem("user")
+      this.form = JSON.parse(str)
+      console.log(this.search)
+      request.get("/chooselist/inputByID",{
+        params:{
+          pageNum:this.currentPage,
+          pageSize:this.pageSize,
+          id:this.form.id,
+          search:this.search
+        }
+      }).then(res=>{
+        console.log(res)
+        this.tableData=res.data.records
+        this.total=res.data.total
+      })
+    },
+    load(){
+      let str = sessionStorage.getItem("user")
+      this.form = JSON.parse(str)
+      request.get("/chooselist/input",{
+        params:{
+          pageNum:this.currentPage,
+          pageSize:this.pageSize,
+          id:this.form.id
+        }
+      }).then(res=>{
+        console.log(res)
+        this.tableData=res.data.records
+        this.total=res.data.total
+      })
+    },
+    handleSizeChange(pageSize){
+      //改变当前每页的个数触发
+      this.pageSize=pageSize
+      this.load()
+    },
+    handleCurrentChange(pageNum){  //改变当前页码触发
+      this.currentPage=pageNum
+      this.load()
+    }
+  }
+}
+</script>
+
+<style scoped>
+
+</style>

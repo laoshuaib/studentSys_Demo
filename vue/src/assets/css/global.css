@@ -1,0 +1,10 @@
+/*这是一个统一的样式表*/
+
+*{
+    margin: 0;/*margin 属性为给定元素设置所有四个（上下左右）方向的外边距属性*/
+    padding: 0;/*控制元素所有四条边的内边距区域。*/
+    box-sizing: border-box;/*    border-box 告诉浏览器：你想要设置的边框和内边距的值是包含在width内的。也就是说，
+                            如果你将一个元素的width设为100px，那么这100px会包含它的border和padding，内容区的
+                            实际宽度是width减去(border + padding)的值。大多数情况下，这使得我们更容易地设定一个元素的宽高。*/
+
+}
